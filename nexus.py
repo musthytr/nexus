@@ -10,7 +10,15 @@ from urllib.parse import urlparse, parse_qs
 
 try:
     gi.require_version('Gtk', '3.0')
-    gi.require_version('WebKit2', '4.0')
+    # WebKit2 sürüm uyumluluğu için farklı sürümleri dene
+    try:
+        gi.require_version('WebKit2', '4.1')
+    except (ValueError, AttributeError, ImportError):
+        try:
+            gi.require_version('WebKit2', '4.0')
+        except (ValueError, AttributeError, ImportError):
+            print("Uyarı: WebKit2 4.0 veya 4.1 bulunamadı.")
+            
     from gi.repository import Gtk, WebKit2, GLib
 except ImportError:
     pass
