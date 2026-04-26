@@ -15,12 +15,26 @@ if [ ! -f /etc/arch-release ]; then
 fi
 
 echo "Bağımlılıklar kuruluyor (pacman)..."
-sudo pacman -S --noconfirm python python-gobject webkit2gtk git flatpak
+# WebKit paket adları Arch'ta değişmiş olabilir, alternatifleri deniyoruz
+sudo pacman -S --noconfirm python python-gobject git flatpak
+
+if pacman -Si webkit2gtk-4.1 &>/dev/null; then
+    sudo pacman -S --noconfirm webkit2gtk-4.1
+elif pacman -Si webkit2gtk-4.0 &>/dev/null; then
+    sudo pacman -S --noconfirm webkit2gtk-4.0
+elif pacman -Si webkit2gtk &>/dev/null; then
+    sudo pacman -S --noconfirm webkit2gtk
+else
+    echo "UYARI: webkit2gtk paketi bulunamadı. Lütfen manuel kurun."
+fi
 
 echo "Nexus dosyaları hazırlanıyor..."
-if [ ! -f "nexus.py" ]; then
+if [ ! -d "nexus" ]; then
     git clone https://github.com/musthytr/nexus.git
     cd nexus
+else
+    cd nexus
+    git pull
 fi
 
 chmod +x nexus.py

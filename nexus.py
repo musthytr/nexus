@@ -8,10 +8,13 @@ import urllib.request
 import threading
 from urllib.parse import urlparse, parse_qs
 
-# Arch Linux için özel olarak yapılandırılmıştır
 try:
     gi.require_version('Gtk', '3.0')
-    gi.require_version('WebKit2', '4.0')
+    # Try 4.1 first, then 4.0
+    try:
+        gi.require_version('WebKit2', '4.1')
+    except:
+        gi.require_version('WebKit2', '4.0')
     from gi.repository import Gtk, WebKit2, GLib
 except ImportError:
     pass
@@ -29,11 +32,7 @@ def get_system_info():
     return {"distro": distro_id, "id_like": id_like}
 
 def launch_external_terminal(cmd):
-    """Open a system terminal window to run the given command.
-    The user can interactively enter sudo password in the terminal.
-    """
     wrapped = f'{cmd}; echo "\n\n[İşlem tamamlandı. Kapatmak için bir tuşa basın.]"; read -n1'
-    
     terminals = [
         ['kitty', '--', 'bash', '-c', wrapped],
         ['alacritty', '-e', 'bash', '-c', wrapped],
@@ -42,25 +41,20 @@ def launch_external_terminal(cmd):
         ['xfce4-terminal', '-e', f'bash -c "{wrapped}"'],
         ['xterm', '-e', f'bash -c "{wrapped}"'],
     ]
-    
     for term_cmd in terminals:
         try:
             subprocess.Popen(term_cmd)
             return
         except FileNotFoundError:
             continue
-        except Exception as e:
-            print(f"Terminal error ({term_cmd[0]}): {e}")
-            continue
-    
     print("HATA: Hiçbir terminal emülatörü bulunamadı!")
 
 HTML_CONTENT = """<!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-width=1.0">
-    <title>Nexus (Arch Only)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus (Arch Linux)</title>
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
@@ -92,11 +86,9 @@ HTML_CONTENT = """<!DOCTYPE html>
         .btn { padding: 10px 20px; border-radius: var(--radius-sm); border: none; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; color: white; }
         .btn-primary { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); }
         .input-field { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; outline: none; margin-bottom: 16px; }
-        .select-field { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; outline: none; margin-bottom: 16px; }
         .apps-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 24px; }
         .app-card { display: flex; flex-direction: column; gap: 16px; }
         .app-header { display: flex; gap: 16px; align-items: center; }
-        .app-icon { width: 48px; height: 48px; border-radius: 12px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 24px; }
         .chat-container { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow: hidden; margin-top: 20px; }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .message { padding: 16px; border-radius: var(--radius-md); max-width: 80%; line-height: 1.5; font-size: 14px; }
@@ -118,37 +110,31 @@ HTML_CONTENT = """<!DOCTYPE html>
     <div class="main-content" id="content"></div>
 
     <script>
-        let isArch = true; // Sadece Arch odaklı
         let chatHistory = [];
         const views = {
             bridge: `
-                <h1>Sürücü <span style="color: var(--accent-primary)">Kurulumu</span> (Arch Linux)</h1>
-                <p>Ekran kartı sürücülerini pacman üzerinden kurun.</p>
+                <h1>Sürücü <span style="color: var(--accent-primary)">Kurulumu</span></h1>
                 <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 24px;">
-                    <div class="glass-card m-card" onclick="installDrivers('nvidia')"><h3>NVIDIA</h3><p>nvidia & nvidia-utils</p></div>
-                    <div class="glass-card m-card" onclick="installDrivers('amd')"><h3>AMD</h3><p>mesa & vulkan-radeon</p></div>
-                    <div class="glass-card m-card" onclick="installDrivers('intel')"><h3>Intel</h3><p>mesa & vulkan-intel</p></div>
+                    <div class="glass-card m-card" onclick="installDrivers('nvidia')"><h3>NVIDIA</h3><p>nvidia & utils</p></div>
+                    <div class="glass-card m-card" onclick="installDrivers('amd')"><h3>AMD</h3><p>mesa & radeon</p></div>
+                    <div class="glass-card m-card" onclick="installDrivers('intel')"><h3>Intel</h3><p>mesa & intel</p></div>
                 </div>
             `,
             hub: `
-                <h1>Uygulama <span style="color: var(--accent-primary)">Merkezi</span></h1>
-                <div class="checkbox-group" style="display:flex; gap:20px; margin-bottom:20px;">
-                    <label><input type="checkbox" id="chk-flatpak" checked> Flatpak</label>
-                    <label><input type="checkbox" id="chk-aur" checked> AUR (yay)</label>
-                </div>
-                <div style="display:flex; gap:12px; margin-bottom: 32px;">
-                    <input type="text" id="search-input" placeholder="Uygulama ara..." class="input-field" style="margin-bottom:0; flex:1;">
+                <h1>Paket <span style="color: var(--accent-primary)">Merkezi</span></h1>
+                <p>Pacman, AUR ve Flathub üzerinde arama yapın.</p>
+                <div style="display:flex; gap:12px; margin-top: 20px;">
+                    <input type="text" id="search-input" placeholder="Paket adı..." class="input-field" style="margin-bottom:0; flex:1;">
                     <button class="btn btn-primary" onclick="searchApps()">Ara</button>
                 </div>
                 <div id="results" class="apps-grid"></div>
             `,
             assistant: `
                 <h1>AI <span style="color: var(--accent-secondary)">Asistanı</span></h1>
-                <input type="password" id="ai-key" class="input-field" placeholder="API Key" onchange="saveKey()">
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages"></div>
                     <div class="chat-input-area">
-                        <input type="text" id="chat-input" class="input-field" style="margin-bottom:0;" placeholder="Mesajınızı yazın...">
+                        <input type="text" id="chat-input" class="input-field" style="margin-bottom:0;" placeholder="Mesaj...">
                         <button class="btn btn-primary" onclick="sendChat()">Gönder</button>
                     </div>
                 </div>
@@ -156,8 +142,8 @@ HTML_CONTENT = """<!DOCTYPE html>
             maintenance: `
                 <h1>Sistem <span style="color: var(--accent-success)">Bakımı</span></h1>
                 <div class="maintenance-grid">
-                    <div class="glass-card m-card" onclick="runMaintenance('update')"><h3>Güncelle</h3><p>pacman -Syu</p></div>
-                    <div class="glass-card m-card" onclick="runMaintenance('clean')"><h3>Temizle</h3><p>paccache & orphans</p></div>
+                    <div class="glass-card m-card" onclick="runMaintenance('update')"><h3>Güncelle</h3><p>Sistem ve Flatpak</p></div>
+                    <div class="glass-card m-card" onclick="runMaintenance('clean')"><h3>Temizle</h3><p>Cache ve Yetimler</p></div>
                 </div>
             `
         };
@@ -166,20 +152,33 @@ HTML_CONTENT = """<!DOCTYPE html>
             document.getElementById('content').innerHTML = views[name];
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.querySelector(`.nav-item[data-view="${name}"]`).classList.add('active');
+            if(name === 'hub') {
+                document.getElementById('search-input').addEventListener('keypress', e => { if(e.key === 'Enter') searchApps(); });
+            }
         }
         loadView('bridge');
 
         window.installDrivers = (gpu) => fetch('http://localhost:8080/api/install_driver', {method:'POST', body:JSON.stringify({gpu})});
         window.runMaintenance = (action) => fetch('http://localhost:8080/api/maintenance', {method:'POST', body:JSON.stringify({action})});
+        
         window.searchApps = async () => {
             const q = document.getElementById('search-input').value;
-            const res = await fetch(`http://localhost:8080/api/search?q=${q}&flatpak=true&aur=true`);
+            const res = await fetch(`http://localhost:8080/api/search?q=${encodeURIComponent(q)}`);
             const data = await res.json();
             let h = '';
             data.results.forEach(a => {
-                h += `<div class="glass-card app-card"><h3>${a.name}</h3><p>${a.summary}</p><button class="btn btn-primary" onclick="installApp('${a.source}','${a.id}')">Yükle</button></div>`;
+                const color = a.source === 'aur' ? 'var(--accent-warning)' : (a.source === 'pacman' ? 'var(--accent-success)' : 'var(--accent-primary)');
+                h += `
+                <div class="glass-card app-card">
+                    <div style="display:flex; justify-content:space-between; align-items:start">
+                        <h3>${a.name}</h3>
+                        <span style="font-size:10px; padding:2px 6px; background:${color}; border-radius:4px; color:white">${a.source.toUpperCase()}</span>
+                    </div>
+                    <p style="font-size:13px; color:var(--text-secondary); flex:1">${a.summary}</p>
+                    <button class="btn btn-primary" onclick="installApp('${a.source}','${a.id}')">Yükle</button>
+                </div>`;
             });
-            document.getElementById('results').innerHTML = h;
+            document.getElementById('results').innerHTML = h || '<p>Sonuç bulunamadı.</p>';
         };
         window.installApp = (type, id) => fetch('http://localhost:8080/api/install', {method:'POST', body:JSON.stringify({type, pkg:id})});
     </script>
@@ -194,20 +193,49 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             self.send_header('Content-type', 'text/html; charset=utf-8')
             self.end_headers()
             self.wfile.write(HTML_CONTENT.encode('utf-8'))
-        elif parsed.path == '/api/system':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
-            self.wfile.write(json.dumps(get_system_info()).encode('utf-8'))
         elif parsed.path == '/api/search':
             qs = parse_qs(parsed.query)
             query = qs.get('q', [''])[0]
             results = []
-            # Flathub & AUR RPC (Basitleştirilmiş)
+            
+            # 1. Pacman Search
+            try:
+                out = subprocess.check_output(['pacman', '-Ss', query], text=True)
+                lines = out.splitlines()
+                for i in range(0, len(lines), 2):
+                    if i+1 < len(lines):
+                        parts = lines[i].split('/')
+                        repo = parts[0]
+                        name_ver = parts[1].split(' ')
+                        results.append({'source': 'pacman', 'id': name_ver[0], 'name': name_ver[0], 'summary': lines[i+1].strip()})
+            except: pass
+
+            # 2. AUR Search (yay)
+            try:
+                out = subprocess.check_output(['yay', '-Ss', '--color', 'never', query], text=True)
+                lines = out.splitlines()
+                for i in range(0, len(lines), 2):
+                    if i+1 < len(lines):
+                        if lines[i].startswith('aur/'):
+                            name = lines[i].split('/')[1].split(' ')[0]
+                            results.append({'source': 'aur', 'id': name, 'name': name, 'summary': lines[i+1].strip()})
+            except: pass
+
+            # 3. Flathub Search
+            try:
+                url = "https://flathub.org/api/v2/search"
+                payload = json.dumps({"query": query}).encode('utf-8')
+                req = urllib.request.Request(url, data=payload, headers={'Content-Type': 'application/json'}, method='POST')
+                with urllib.request.urlopen(req) as response:
+                    data = json.loads(response.read().decode('utf-8'))
+                    for hit in data.get('hits', [])[:5]:
+                        results.append({'source': 'flathub', 'id': hit['app_id'], 'name': hit['name'], 'summary': hit['summary']})
+            except: pass
+
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
             self.end_headers()
-            self.wfile.write(json.dumps({"results": []}).encode('utf-8'))
+            self.wfile.write(json.dumps({"results": results[:30]}).encode('utf-8'))
 
     def do_POST(self):
         parsed = urlparse(self.path)
@@ -216,15 +244,16 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
         
         cmd = ""
         if parsed.path == '/api/install':
-            if data['type'] == 'aur': cmd = f"yay -S --noconfirm {data['pkg']}"
+            if data['type'] == 'pacman': cmd = f"sudo pacman -S --noconfirm {data['pkg']}"
+            elif data['type'] == 'aur': cmd = f"yay -S --noconfirm {data['pkg']}"
             else: cmd = f"flatpak install -y flathub {data['pkg']}"
         elif parsed.path == '/api/install_driver':
             if data['gpu'] == 'nvidia': cmd = "sudo pacman -S --noconfirm nvidia nvidia-utils"
             elif data['gpu'] == 'amd': cmd = "sudo pacman -S --noconfirm mesa vulkan-radeon"
             elif data['gpu'] == 'intel': cmd = "sudo pacman -S --noconfirm mesa vulkan-intel"
         elif parsed.path == '/api/maintenance':
-            if data['action'] == 'update': cmd = "sudo pacman -Syu"
-            elif data['action'] == 'clean': cmd = "sudo pacman -Scc && sudo pacman -Rns $(pacman -Qtdq)"
+            if data['action'] == 'update': cmd = "sudo pacman -Syu && flatpak update -y"
+            elif data['action'] == 'clean': cmd = "sudo pacman -Scc --noconfirm && flatpak uninstall --unused -y"
             
         if cmd: launch_external_terminal(cmd)
         self.send_response(200)
@@ -239,7 +268,7 @@ def start_server():
 if __name__ == '__main__':
     threading.Thread(target=start_server, daemon=True).start()
     try:
-        win = Gtk.Window(title="Nexus (Arch Linux Only)")
+        win = Gtk.Window(title="Nexus (Arch Linux)")
         win.set_default_size(1024, 768)
         win.connect("destroy", Gtk.main_quit)
         webview = WebKit2.WebView()
@@ -247,6 +276,6 @@ if __name__ == '__main__':
         win.add(webview)
         win.show_all()
         Gtk.main()
-    except Exception as e:
-        print(e)
-        while True: threading.Event().wait(100)
+    except:
+        import time
+        while True: time.sleep(100)
