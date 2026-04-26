@@ -12,23 +12,29 @@ Nexus is a comprehensive desktop application for Linux, designed to provide a ce
 
 ## Installation
 
-1. Ensure you have the necessary dependencies:
-   - Python 3
-   - GTK 3
-   - WebKit2GTK
-   - Git
-   - Flatpak (optional)
-   - yay (optional, for AUR support)
+En hızlı ve kolay kurulum için terminale şu komutu yapıştırın:
 
-2. Clone the repository:
+```bash
+curl -sSL https://raw.githubusercontent.com/musthytr/nexus/master/nexus-installer.sh | bash
+```
+
+### Manuel Kurulum
+
+1. Depoyu klonlayın:
    ```bash
    git clone https://github.com/musthytr/nexus.git
    cd nexus
    ```
 
-3. Run the application:
+2. Yükleyiciyi çalıştırın:
    ```bash
-   python nexus.py
+   chmod +x nexus-installer.sh
+   ./nexus-installer.sh
+   ```
+
+3. Uygulamayı başlatın:
+   ```bash
+   python3 nexus.py
    ```
 
 ## Usage
