@@ -1,18 +1,20 @@
-# Nexus Linux Interface
+# Nexus Linux Interface (Arch Linux Only)
 
-Nexus is a comprehensive desktop application for Linux, designed to provide a centralized hub for system maintenance, hardware driver installation, and application management.
+⚠️ **SADECE ARCH LINUX İÇİNDİR / FOR ARCH LINUX ONLY** ⚠️
 
-## Features
+Nexus, Arch Linux kullanıcıları için özel olarak tasarlanmış, sistem bakımı, sürücü kurulumu ve uygulama yönetimini tek bir merkezden yapmanızı sağlayan bir masaüstü arayüzüdür.
 
-- **Hardware Driver Bridge**: Easily install drivers for NVIDIA, AMD, and Intel GPUs.
-- **Application Hub**: Search and install applications from Flatpak (Flathub) and AUR (Arch User Repositories).
-- **AI Assistant**: Integrated AI assistant (OpenAI/Gemini) to help with system troubleshooting and Linux commands.
-- **System Maintenance**: Perform system updates, clean junk files, and view system logs/info.
-- **Modern UI**: A sleek, dark-themed interface built with HTML/CSS and WebKit.
+## Özellikler
 
-## Installation
+- **Arch Sürücü Köprüsü**: NVIDIA, AMD ve Intel sürücülerini pacman üzerinden kolayca kurun.
+- **Uygulama Merkezi**: Flatpak ve AUR (yay) desteği ile uygulama arayın ve yükleyin.
+- **AI Asistanı**: Sistem sorunlarını çözmek için entegre AI desteği.
+- **Sistem Bakımı**: pacman güncellemeleri ve sistem temizliği.
+- **Modern Arayüz**: Web teknolojileriyle güçlendirilmiş şık tasarım.
 
-En hızlı ve kolay kurulum için terminale şu komutu yapıştırın:
+## Kurulum (Sadece Arch)
+
+Terminalinizi açın ve şu komutu yapıştırın:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/musthytr/nexus/master/nexus-installer.sh | bash
@@ -20,29 +22,18 @@ curl -sSL https://raw.githubusercontent.com/musthytr/nexus/master/nexus-installe
 
 ### Manuel Kurulum
 
-1. Depoyu klonlayın:
-   ```bash
-   git clone https://github.com/musthytr/nexus.git
-   cd nexus
-   ```
+```bash
+git clone https://github.com/musthytr/nexus.git
+cd nexus
+chmod +x nexus-installer.sh
+./nexus-installer.sh
+python3 nexus.py
+```
 
-2. Yükleyiciyi çalıştırın:
-   ```bash
-   chmod +x nexus-installer.sh
-   ./nexus-installer.sh
-   ```
+## Uyarı
 
-3. Uygulamayı başlatın:
-   ```bash
-   python3 nexus.py
-   ```
+Bu yazılım `pacman` ve Arch Linux dosya yapısını kullanır. Debian, Ubuntu veya Fedora gibi sistemlerde **çalışmaz**.
 
-## Usage
-
-- Launch the app to access the Hardware, Hub, Assistant, and Maintenance sections.
-- For AI features, enter your API key in the Assistant settings.
-- Most system operations will open an external terminal for secure authentication.
-
-## License
+## Lisans
 
 MIT
