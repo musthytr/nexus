@@ -102,7 +102,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         .input-field { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; font-size: 14px; outline: none; margin-bottom: 16px; }
         .select-field { width: 100%; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: rgba(0,0,0,0.2); color: white; font-size: 14px; outline: none; margin-bottom: 16px; appearance: none; }
         .select-field option { background: var(--bg-color); color: white; }
-
+ 
         .gpu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 24px; }
         .gpu-card { text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .gpu-card:hover { transform: translateY(-4px); background: rgba(255,255,255,0.1); }
@@ -118,7 +118,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         .checkbox-group { display: flex; gap: 20px; margin-bottom: 24px; }
         .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-secondary); }
         input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-primary); }
-
+ 
         .chat-container { flex: 1; display: flex; flex-direction: column; background: rgba(0,0,0,0.2); border-radius: var(--radius-md); border: 1px solid var(--border-color); overflow: hidden; margin-top: 20px; }
         .chat-messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         .message { padding: 16px; border-radius: var(--radius-md); max-width: 80%; line-height: 1.5; font-size: 14px; }
@@ -131,7 +131,7 @@ HTML_CONTENT = """<!DOCTYPE html>
         .m-card:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
         .m-icon { font-size: 40px; }
         
-
+ 
     </style>
 </head>
 <body>
@@ -140,18 +140,18 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div class="nav-item active" onclick="loadView('bridge')" data-view="bridge"><i class="ph ph-cpu"></i> Donanım</div>
         <div class="nav-item" onclick="loadView('hub')" data-view="hub"><i class="ph ph-storefront"></i> Merkez</div>
         <div class="nav-item" onclick="loadView('assistant')" data-view="assistant"><i class="ph ph-robot"></i> Asistan</div>
-
+ 
         <div class="nav-item" onclick="loadView('maintenance')" data-view="maintenance"><i class="ph ph-wrench"></i> Sistem Bakımı</div>
     </div>
     
     <div class="main-content" id="content"></div>
     
-
-
+ 
+ 
     <script>
         let isArch = false;
         let chatHistory = [];
-
+ 
         const views = {
             bridge: `
                 <h1 style="margin-bottom: 12px; font-size: 32px;">Sürücü <span style="color: var(--accent-primary)">Kurulumu</span></h1>
@@ -182,7 +182,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     <label class="checkbox-label"><input type="checkbox" id="chk-flatpak" checked> Flatpak (Flathub)</label>
                     <label class="checkbox-label"><input type="checkbox" id="chk-aur" checked> AUR (Arch User Repos)</label>
                 </div>
-
+ 
                 <div style="display:flex; gap:12px; margin-bottom: 32px;">
                     <input type="text" id="search-input" placeholder="Uygulama ara (ör. firefox, gimp)..." class="input-field" style="margin-bottom:0; flex:1;">
                     <button class="btn btn-primary" onclick="searchApps()"><i class="ph ph-magnifying-glass"></i> Ara</button>
@@ -193,7 +193,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
                 <div id="results" class="apps-grid"></div>
             `,
-
+ 
             assistant: `
                 <h1 style="margin-bottom: 12px; font-size: 32px;">Yapay Zeka <span style="color: var(--accent-secondary)">Asistanı</span></h1>
                 <p style="color: var(--text-secondary); margin-bottom: 20px;">Bir API anahtarı girin ve doğrudan sisteminizden AI modellerine sorular sorun.</p>
@@ -218,7 +218,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                         <input type="password" id="ai-key" class="input-field" placeholder="sk-..." onchange="saveKey()">
                     </div>
                 </div>
-
+ 
                 <div class="chat-container">
                     <div class="chat-messages" id="chat-messages">
                         <div class="message ai">Merhaba! Ben Nexus Asistanı. Ayarlardan API anahtarını girdikten sonra bana istediğinizi sorabilirsiniz. Linux komutlarında, sorun çözmede veya herhangi bir konuda yardımcı olabilirim.</div>
@@ -257,7 +257,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 </div>
             `
         };
-
+ 
         function loadView(name) {
             document.getElementById('content').innerHTML = views[name];
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -285,16 +285,14 @@ HTML_CONTENT = """<!DOCTYPE html>
                 if(savedKey) document.getElementById('ai-key').value = savedKey;
             }
         }
-
-
-
+ 
         fetch('http://localhost:8080/api/system').then(r => r.json()).then(data => {
             if(data.distro === 'arch' || data.distro === 'manjaro' || data.id_like.includes('arch') || data.distro === 'cachyos') {
                 isArch = true;
             }
             loadView('bridge');
         });
-
+ 
         window.installDrivers = function(gpu) {
             fetch('http://localhost:8080/api/install_driver', {
                 method: 'POST',
@@ -302,9 +300,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 body: JSON.stringify({gpu: gpu})
             });
         };
-
-
-
+ 
         window.runMaintenance = function(action) {
             fetch('http://localhost:8080/api/maintenance', {
                 method: 'POST',
@@ -312,7 +308,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 body: JSON.stringify({action})
             });
         };
-
+ 
         window.searchApps = async function() {
             const query = document.getElementById('search-input').value.trim();
             if(!query) return;
@@ -335,7 +331,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                     const iconHtml = isAur ? 
                         `<div class="app-icon" style="color:var(--accent-warning)"><i class="ph ph-package"></i></div>` : 
                         `<div class="app-icon"><img src="${app.icon}" onerror="this.src='https://flathub.org/assets/flathub-logo.svg'"></div>`;
-
+ 
                     html += `
                     <div class="glass-card app-card">
                         <div class="app-header">
@@ -361,7 +357,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 document.getElementById('results').innerHTML = `<p style="grid-column:1/-1;text-align:center;color:#ef4444">Hata: ${e.message}</p>`;
             }
         };
-
+ 
         window.installApp = function(type, id) {
             fetch('http://localhost:8080/api/install', {
                 method: 'POST',
@@ -369,7 +365,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 body: JSON.stringify({type, pkg: id})
             });
         };
-
+ 
         window.updateModels = function() {
             const provider = document.getElementById('ai-provider').value;
             const modelSelect = document.getElementById('ai-model');
@@ -379,11 +375,11 @@ HTML_CONTENT = """<!DOCTYPE html>
                 modelSelect.innerHTML = `<option value="gemini-3-flash-preview">Gemini 3 Flash Preview</option><option value="gemini-3.0-pro">Gemini 3.0 Pro</option>`;
             }
         };
-
+ 
         window.saveKey = function() {
             localStorage.setItem('nexus_ai_key', document.getElementById('ai-key').value);
         };
-
+ 
         window.sendChat = async function() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
@@ -394,7 +390,7 @@ HTML_CONTENT = """<!DOCTYPE html>
                 alert("Lütfen önce API anahtarınızı girin.");
                 return;
             }
-
+ 
             const provider = document.getElementById('ai-provider').value;
             const model = document.getElementById('ai-model').value;
             const messagesDiv = document.getElementById('chat-messages');
@@ -403,11 +399,11 @@ HTML_CONTENT = """<!DOCTYPE html>
             messagesDiv.innerHTML += `<div class="message user">${text}</div>`;
             input.value = '';
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
+ 
             const loadingId = 'msg-' + Date.now();
             messagesDiv.innerHTML += `<div class="message ai" id="${loadingId}"><i class="ph ph-spinner ph-spin"></i> Düşünüyor...</div>`;
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
-
+ 
             try {
                 const res = await fetch('http://localhost:8080/api/chat', {
                     method: 'POST',
@@ -433,7 +429,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     </script>
 </body>
 </html>"""
-
+ 
 class NexusHandler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -449,7 +445,7 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(json.dumps(get_system_info()).encode('utf-8'))
             return
-
+ 
         elif parsed.path == '/api/search':
             qs = parse_qs(parsed.query)
             query = qs.get('q', [''])[0]
@@ -499,14 +495,12 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             
         self.send_response(404)
         self.end_headers()
-
+ 
     def do_POST(self):
         parsed = urlparse(self.path)
         content_length = int(self.headers.get('Content-Length', 0))
         post_data = self.rfile.read(content_length)
         
-
-            
         if parsed.path == '/api/install':
             data = json.loads(post_data.decode('utf-8'))
             pkg_type = data.get('type')
@@ -527,14 +521,20 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             gpu = data.get('gpu')
             sys_info = get_system_info()
             is_arch = sys_info['distro'] in ['arch', 'manjaro', 'cachyos'] or 'arch' in sys_info['id_like']
+            is_fedora = sys_info['distro'] == 'fedora' or 'fedora' in sys_info['id_like']
+            is_debian = sys_info['distro'] in ['debian', 'ubuntu', 'linuxmint', 'pop'] or 'debian' in sys_info['id_like']
             
             cmd = "echo 'OS not supported for auto driver install'"
             if is_arch:
                 if gpu == 'nvidia': cmd = "sudo pacman -S --noconfirm nvidia nvidia-utils"
                 elif gpu == 'amd': cmd = "sudo pacman -S --noconfirm mesa vulkan-radeon xf86-video-amdgpu"
                 elif gpu == 'intel': cmd = "sudo pacman -S --noconfirm mesa vulkan-intel"
-            else:
-                if gpu == 'nvidia': cmd = "sudo ubuntu-drivers autoinstall"
+            elif is_fedora:
+                if gpu == 'nvidia': cmd = "sudo dnf install -y akmod-nvidia xorg-x11-drv-nvidia-cuda"
+                elif gpu == 'amd': cmd = "sudo dnf install -y mesa-dri-drivers mesa-vulkan-drivers xorg-x11-drv-amdgpu"
+                elif gpu == 'intel': cmd = "sudo dnf install -y mesa-dri-drivers mesa-vulkan-drivers"
+            elif is_debian:
+                if gpu == 'nvidia': cmd = "sudo ubuntu-drivers autoinstall || sudo apt install -y nvidia-driver"
                 elif gpu == 'amd': cmd = "sudo apt install -y mesa-vulkan-drivers xserver-xorg-video-amdgpu"
                 elif gpu == 'intel': cmd = "sudo apt install -y mesa-vulkan-drivers"
                 
@@ -544,9 +544,7 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"success":true}')
             return
-            
-
-
+ 
         elif parsed.path == '/api/chat':
             data = json.loads(post_data.decode('utf-8'))
             provider = data.get('provider')
@@ -596,23 +594,29 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             else:
                 self.wfile.write(json.dumps({"reply": reply}).encode('utf-8'))
             return
-
+ 
         elif parsed.path == '/api/maintenance':
             data = json.loads(post_data.decode('utf-8'))
             action = data.get('action')
             sys_info = get_system_info()
             is_arch = sys_info['distro'] in ['arch', 'manjaro', 'cachyos'] or 'arch' in sys_info['id_like']
+            is_fedora = sys_info['distro'] == 'fedora' or 'fedora' in sys_info['id_like']
+            is_debian = sys_info['distro'] in ['debian', 'ubuntu', 'linuxmint', 'pop'] or 'debian' in sys_info['id_like']
             
             cmd = ""
             if action == 'update':
                 if is_arch:
                     cmd = "sudo pacman -Syu && sudo flatpak update -y"
-                else:
+                elif is_fedora:
+                    cmd = "sudo dnf upgrade -y && sudo flatpak update -y"
+                elif is_debian:
                     cmd = "sudo apt update && sudo apt upgrade -y && sudo flatpak update -y"
             elif action == 'clean':
                 if is_arch:
                     cmd = "sudo pacman -Scc --noconfirm && sudo paccache -r && flatpak uninstall --unused -y"
-                else:
+                elif is_fedora:
+                    cmd = "sudo dnf clean all && flatpak uninstall --unused -y"
+                elif is_debian:
                     cmd = "sudo apt autoremove -y && sudo apt clean && flatpak uninstall --unused -y"
             elif action == 'info':
                 cmd = "if command -v neofetch &> /dev/null; then neofetch; elif command -v fastfetch &> /dev/null; then fastfetch; else uname -a && lscpu | grep 'Model name' && free -h; fi"
@@ -630,11 +634,11 @@ class NexusHandler(http.server.SimpleHTTPRequestHandler):
             
         self.send_response(404)
         self.end_headers()
-
+ 
 def start_server():
     with socketserver.TCPServer(("", PORT), NexusHandler) as httpd:
         httpd.serve_forever()
-
+ 
 if __name__ == '__main__':
     # Start background server
     t = threading.Thread(target=start_server, daemon=True)
